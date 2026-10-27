@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Control de Activos</title>
+  <title>Control de Activos · Leguz</title>
+  <link rel="icon" type="image/png" href="assets/logos/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,10 +16,10 @@
   <header class="topbar">
     <div class="topbar__inner">
       <div class="brand">
-        <span class="brand__mark">CA</span>
+        <img class="brand__logo" src="assets/logos/logo.png" alt="Leguz">
         <div>
           <div class="brand__name">Control de Activos</div>
-          <div class="brand__sub">Inventario de equipos</div>
+          <div class="brand__sub">Leguz · Inventario de equipos</div>
         </div>
       </div>
 
@@ -58,23 +59,8 @@
         </select>
       </div>
 
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Equipo</th>
-              <th>Tipo</th>
-              <th class="num">Total</th>
-              <th class="num">Asignados</th>
-              <th class="num">Disponibles</th>
-              <th>Uso</th>
-              <th class="actions"><span class="sr-only">Acciones</span></th>
-            </tr>
-          </thead>
-          <tbody id="tbodyEquipos"></tbody>
-        </table>
-        <div class="empty" id="emptyEquipos" hidden></div>
-      </div>
+      <div class="grid-equipos" id="gridEquipos"></div>
+      <div class="empty" id="emptyEquipos" hidden></div>
     </section>
 
     <!-- ===== Vista: Asignaciones ===== -->
@@ -93,10 +79,10 @@
       <div class="toolbar">
         <div class="search">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input type="search" class="input" id="buscarAsignacion" placeholder="Empleado, IMEI, teléfono o equipo">
+          <input type="search" class="input" id="buscarAsignacion" placeholder="Empleado, ruta, sucursal, IMEI o equipo">
         </div>
         <select class="input input--select" id="filtroRuta">
-          <option value="">Todas las rutas</option>
+          <option value="">Todas las rutas y sucursales</option>
         </select>
         <select class="input input--select" id="filtroEstado">
           <option value="activa">Activas</option>
@@ -105,26 +91,15 @@
         </select>
       </div>
 
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Empleado</th>
-              <th>Ruta</th>
-              <th>Equipo</th>
-              <th>IMEI</th>
-              <th>Teléfono</th>
-              <th>Asignado</th>
-              <th>Estado</th>
-              <th class="actions"><span class="sr-only">Acciones</span></th>
-            </tr>
-          </thead>
-          <tbody id="tbodyAsignaciones"></tbody>
-        </table>
-        <div class="empty" id="emptyAsignaciones" hidden></div>
-      </div>
+      <div class="grid-asig" id="gridAsignaciones"></div>
+      <div class="empty" id="emptyAsignaciones" hidden></div>
     </section>
   </main>
+
+  <!-- ===== Modal: detalle de equipo ===== -->
+  <dialog class="dialog dialog--detalle" id="dlgDetalle" aria-label="Detalle del equipo">
+    <div id="detalle"></div>
+  </dialog>
 
   <!-- ===== Diálogo: alta / edición de equipo ===== -->
   <dialog class="dialog" id="dlgEquipo" aria-labelledby="dlgEquipoTitulo">
@@ -158,6 +133,10 @@
             <small class="field__error"></small>
           </div>
         </div>
+        <fieldset class="pick">
+          <legend>Imagen <span class="optional">opcional</span></legend>
+          <div class="pick__grid" id="eqImagenes"></div>
+        </fieldset>
       </div>
 
       <footer class="dialog__foot">
@@ -188,7 +167,7 @@
         </div>
         <div class="grid-2">
           <div class="field">
-            <label for="asRuta">Ruta</label>
+            <label for="asRuta" id="lblUbicacion">Ruta</label>
             <input class="input" id="asRuta" name="ruta" list="listaRutas" maxlength="40" autocomplete="off" placeholder="Ej. Ruta 12">
             <small class="field__error"></small>
           </div>
@@ -237,6 +216,7 @@
   <datalist id="listaTipos"></datalist>
   <datalist id="listaRutas"></datalist>
   <datalist id="listaEmpleados"></datalist>
+  <datalist id="listaSucursales"></datalist>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

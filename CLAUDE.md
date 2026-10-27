@@ -12,7 +12,7 @@ y saber cuántos hay, cuántos están asignados y a quién (empleado, ruta, IMEI
 
 ## Estructura
 ```
-index.html        Estructura: topbar, 2 vistas (Inventario / Asignaciones), diálogos
+index.html        Estructura: topbar, 2 vistas (Inventario / Asignaciones), modal de detalle, diálogos
 css/styles.css    Estilos. Tokens de color/espaciado en :root
 js/firebase.js    initializeApp + getFirestore (exporta `db`)
 js/app.js         Toda la lógica: suscripciones, render, formularios, transacciones
@@ -34,6 +34,7 @@ Los ES modules no funcionan con `file://`. Servir la carpeta con un servidor loc
 | tipo | string | Celular, Laptop, Tablet… (texto libre con autocompletado) |
 | cantidad | int | total de unidades en existencia |
 | asignados | int | contador de asignaciones **activas** |
+| imagen | string | archivo de `assets/activos/` (ej. `redmi.jpg`) o `""`; debe estar en el catálogo `IMAGENES` de `js/app.js` |
 | creadoEn / actualizadoEn | timestamp | `serverTimestamp()` |
 
 Disponibles = `cantidad - asignados` (se calcula, no se guarda).
@@ -42,9 +43,10 @@ Disponibles = `cantidad - asignados` (se calcula, no se guarda).
 | campo | tipo | nota |
 |---|---|---|
 | equipoId | string | id del doc en `equipos` |
-| equipoNombre / equipoTipo | string | copia desnormalizada para mostrar historial |
-| ruta | string | |
-| empleado | string | |
+| equipoNombre / equipoTipo / equipoImagen | string | copia desnormalizada para mostrar historial |
+| ruta | string | `""` en tablets y lectores |
+| sucursal | string | solo tablets y lectores; `""` en los demás |
+| empleado | string | `""` en tablets y lectores |
 | imei | string | opcional, 15 dígitos; no se repite entre activas |
 | telefono | string | opcional, 10 dígitos |
 | estado | `"activa"` \| `"devuelta"` | |
@@ -58,15 +60,23 @@ Disponibles = `cantidad - asignados` (se calcula, no se guarda).
 4. No se puede bajar `cantidad` por debajo de `asignados`.
 5. No se puede eliminar un equipo con `asignados > 0`.
 6. Eliminar una asignación activa también libera la unidad.
+7. **Tablets y lectores** se asignan **solo a una sucursal**: sin ruta ni empleado
+   (`esDeSucursal()` en `js/app.js`, busca "tablet"/"lector" en tipo o nombre).
+   Los demás equipos llevan ruta + empleado.
 
 ## Convenciones de UI
 - Tema claro corporativo, color principal azul marino `--primary: #0f3d6e`, fuente Inter.
 - Interfaz limpia: **sin tarjetas de KPIs**. Los totales van como una línea de resumen bajo
   el título (`.summary`). Mantenerlo así.
+- Inventario y Asignaciones se muestran como **tarjetas** (`.pcard` / `.acard`), no tablas.
+  Clic en una tarjeta de equipo abre el modal centrado `#dlgDetalle` (stock, acciones,
+  asignaciones activas e historial). Las acciones van por `data-accion` → `manejarAccion()`.
 - Formularios en `<dialog>` nativo; confirmaciones con `confirmar()` en vez de `window.confirm`.
 - Notificaciones con `toast(msg, "ok" | "error")`.
 - Todo texto de usuario que se inyecta en HTML pasa por `esc()`.
 - Textos de la UI en español (México).
+- Branding Leguz: logo en `assets/logos/logo.png` (topbar y favicon), acento amarillo `--accent`.
+- Imagen nueva de equipo: copiarla a `assets/activos/` y agregarla a `IMAGENES` en `js/app.js`.
 
 ## Pendientes / ideas
 - **Autenticación** (Firebase Auth) y cambiar las reglas a `request.auth != null`. Ahora mismo

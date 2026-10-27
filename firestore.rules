@@ -28,8 +28,10 @@ service cloud.firestore {
       allow read: if autenticado();
       allow create: if autenticado()
         && request.resource.data.estado == 'activa'
-        && request.resource.data.ruta is string && request.resource.data.ruta.size() > 0
-        && request.resource.data.empleado is string && request.resource.data.empleado.size() > 0
+        // Ruta + empleado, o solo sucursal (tablets y lectores)
+        && ((request.resource.data.ruta is string && request.resource.data.ruta.size() > 0
+             && request.resource.data.empleado is string && request.resource.data.empleado.size() > 0)
+            || (request.resource.data.sucursal is string && request.resource.data.sucursal.size() > 0))
         && exists(/databases/$(database)/documents/equipos/$(request.resource.data.equipoId));
       allow update: if autenticado()
         && request.resource.data.estado in ['activa', 'devuelta'];
