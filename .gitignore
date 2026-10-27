@@ -1,0 +1,45 @@
+# ==========================================================
+# Control de Activos — archivos que no deben subirse al repo
+# ==========================================================
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Llaves de cuenta de servicio de Firebase / Google Cloud (acceso de administrador)
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+service-account*.json
+credentials*.json
+
+# Firebase CLI (caché y logs locales)
+.firebase/
+.firebaserc.local
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+
+# Respaldos / exportaciones de la base de datos (datos de empleados, IMEI, teléfonos)
+backups/
+exports/
+*.backup.json
+*.csv
+*.xlsx
+
+# Dependencias y logs (por si en algún momento se usa npm)
+node_modules/
+npm-debug.log*
+*.log
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Configuración local de Claude Code
+.claude/settings.local.json
