@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// Reglas iniciales: validan la forma de los datos.
+// IMPORTANTE: todavía no hay autenticación, así que cualquiera con la URL
+// del proyecto puede leer/escribir. Siguiente paso: Firebase Auth y
+// cambiar `true` por `request.auth != null`.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() { return true; } // -> request.auth != null
+
+    match /equipos/{id} {
+      allow read: if autenticado();
+      allow create: if autenticado()
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() > 0
+        && request.resource.data.tipo is string && request.resource.data.tipo.size() > 0
+        && request.resource.data.cantidad is int && request.resource.data.cantidad > 0
+        && request.resource.data.asignados == 0;
+      allow update: if autenticado()
+        && request.resource.data.cantidad is int
+        && request.resource.data.asignados is int
+        && request.resource.data.asignados >= 0
+        && request.resource.data.asignados <= request.resource.data.cantidad;
+      allow delete: if autenticado() && resource.data.asignados == 0;
+    }
+
+    match /asignaciones/{id} {
+      allow read: if autenticado();
+      allow create: if autenticado()
+        && request.resource.data.estado == 'activa'
+        && request.resource.data.ruta is string && request.resource.data.ruta.size() > 0
+        && request.resource.data.empleado is string && request.resource.data.empleado.size() > 0
+        && exists(/databases/$(database)/documents/equipos/$(request.resource.data.equipoId));
+      allow update: if autenticado()
+        && request.resource.data.estado in ['activa', 'devuelta'];
+      allow delete: if autenticado();
+    }
+  }
+}

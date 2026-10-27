@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control de Activos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ===== Barra superior ===== -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <span class="brand__mark">CA</span>
+        <div>
+          <div class="brand__name">Control de Activos</div>
+          <div class="brand__sub">Inventario de equipos</div>
+        </div>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab is-active" role="tab" aria-selected="true" data-view="inventario">Inventario</button>
+        <button class="tab" role="tab" aria-selected="false" data-view="asignaciones">Asignaciones</button>
+      </nav>
+
+      <div class="conn" id="conn" data-status="loading">
+        <span class="conn__dot"></span><span class="conn__text">Conectando…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ===== Vista: Inventario ===== -->
+    <section class="view is-active" id="view-inventario">
+      <div class="page-head">
+        <div>
+          <h1>Inventario</h1>
+          <p class="summary" id="summaryInventario">Cargando…</p>
+        </div>
+        <button class="btn btn--primary" id="btnNuevoEquipo">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo equipo
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" class="input" id="buscarEquipo" placeholder="Buscar por nombre o tipo">
+        </div>
+        <select class="input input--select" id="filtroTipo">
+          <option value="">Todos los tipos</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Equipo</th>
+              <th>Tipo</th>
+              <th class="num">Total</th>
+              <th class="num">Asignados</th>
+              <th class="num">Disponibles</th>
+              <th>Uso</th>
+              <th class="actions"><span class="sr-only">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyEquipos"></tbody>
+        </table>
+        <div class="empty" id="emptyEquipos" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===== Vista: Asignaciones ===== -->
+    <section class="view" id="view-asignaciones">
+      <div class="page-head">
+        <div>
+          <h1>Asignaciones</h1>
+          <p class="summary" id="summaryAsignaciones">Cargando…</p>
+        </div>
+        <button class="btn btn--primary" id="btnNuevaAsignacion">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Asignar equipo
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" class="input" id="buscarAsignacion" placeholder="Empleado, IMEI, teléfono o equipo">
+        </div>
+        <select class="input input--select" id="filtroRuta">
+          <option value="">Todas las rutas</option>
+        </select>
+        <select class="input input--select" id="filtroEstado">
+          <option value="activa">Activas</option>
+          <option value="devuelta">Devueltas</option>
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Ruta</th>
+              <th>Equipo</th>
+              <th>IMEI</th>
+              <th>Teléfono</th>
+              <th>Asignado</th>
+              <th>Estado</th>
+              <th class="actions"><span class="sr-only">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAsignaciones"></tbody>
+        </table>
+        <div class="empty" id="emptyAsignaciones" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Diálogo: alta / edición de equipo ===== -->
+  <dialog class="dialog" id="dlgEquipo" aria-labelledby="dlgEquipoTitulo">
+    <form id="formEquipo" novalidate>
+      <header class="dialog__head">
+        <div>
+          <h2 id="dlgEquipoTitulo">Nuevo equipo</h2>
+          <p class="dialog__sub">Registra el modelo y cuántas unidades hay en existencia.</p>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="dialog__body">
+        <div class="field">
+          <label for="eqNombre">Nombre del equipo</label>
+          <input class="input" id="eqNombre" name="nombre" maxlength="80" autocomplete="off" placeholder="Ej. Samsung Galaxy A15">
+          <small class="field__error"></small>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="eqTipo">Tipo</label>
+            <input class="input" id="eqTipo" name="tipo" list="listaTipos" maxlength="40" autocomplete="off" placeholder="Ej. Celular">
+            <small class="field__error"></small>
+          </div>
+          <div class="field">
+            <label for="eqCantidad">Cantidad</label>
+            <input class="input" id="eqCantidad" name="cantidad" type="number" min="1" step="1" inputmode="numeric" placeholder="0">
+            <small class="field__hint" id="hintCantidad"></small>
+            <small class="field__error"></small>
+          </div>
+        </div>
+      </div>
+
+      <footer class="dialog__foot">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="submit" class="btn btn--primary" id="btnGuardarEquipo">Registrar equipo</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ===== Diálogo: asignación ===== -->
+  <dialog class="dialog" id="dlgAsignacion" aria-labelledby="dlgAsignacionTitulo">
+    <form id="formAsignacion" novalidate>
+      <header class="dialog__head">
+        <div>
+          <h2 id="dlgAsignacionTitulo">Asignar equipo</h2>
+          <p class="dialog__sub">Cada asignación descuenta una unidad del inventario.</p>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="dialog__body">
+        <div class="field">
+          <label for="asEquipo">Equipo</label>
+          <select class="input input--select" id="asEquipo" name="equipoId"></select>
+          <small class="field__error"></small>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="asRuta">Ruta</label>
+            <input class="input" id="asRuta" name="ruta" list="listaRutas" maxlength="40" autocomplete="off" placeholder="Ej. Ruta 12">
+            <small class="field__error"></small>
+          </div>
+          <div class="field">
+            <label for="asEmpleado">Empleado</label>
+            <input class="input" id="asEmpleado" name="empleado" list="listaEmpleados" maxlength="80" autocomplete="off" placeholder="Nombre completo">
+            <small class="field__error"></small>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="asImei">Número de IMEI <span class="optional">opcional</span></label>
+            <input class="input input--mono" id="asImei" name="imei" inputmode="numeric" maxlength="15" autocomplete="off" placeholder="15 dígitos" data-digits>
+            <small class="field__error"></small>
+          </div>
+          <div class="field">
+            <label for="asTelefono">Número de teléfono <span class="optional">opcional</span></label>
+            <input class="input input--mono" id="asTelefono" name="telefono" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="10 dígitos" data-digits>
+            <small class="field__error"></small>
+          </div>
+        </div>
+      </div>
+
+      <footer class="dialog__foot">
+        <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
+        <button type="submit" class="btn btn--primary" id="btnGuardarAsignacion">Asignar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ===== Diálogo: confirmación ===== -->
+  <dialog class="dialog dialog--sm" id="dlgConfirm" aria-labelledby="confirmTitulo">
+    <form method="dialog">
+      <div class="dialog__body">
+        <h2 id="confirmTitulo"></h2>
+        <p id="confirmMensaje" class="muted"></p>
+      </div>
+      <footer class="dialog__foot">
+        <button value="cancel" class="btn btn--ghost">Cancelar</button>
+        <button value="ok" class="btn btn--primary" id="confirmAceptar">Confirmar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Listas de autocompletado -->
+  <datalist id="listaTipos"></datalist>
+  <datalist id="listaRutas"></datalist>
+  <datalist id="listaEmpleados"></datalist>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
